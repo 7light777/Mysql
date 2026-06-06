@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 / 仪表盘 - 篮球数据管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260606v2)}">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar(${activeMenu})}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/header :: header(${pageTitle})}"></div>
+        <section class="content">
+            <div class="stat-grid">
+                <div class="stat-card"><span>球队总数</span><strong th:text="${dashboardPage.dashboard.teamCount}">4</strong></div>
+                <div class="stat-card"><span>球员总数</span><strong th:text="${dashboardPage.dashboard.playerCount}">8</strong></div>
+                <div class="stat-card"><span>比赛总数</span><strong th:text="${dashboardPage.dashboard.gameCount}">4</strong></div>
+                <div class="stat-card"><span>表现记录数</span><strong th:text="${dashboardPage.dashboard.statsCount}">13</strong></div>
+            </div>
+
+            <section class="quick-grid">
+                <a class="quick-card" th:if="${currentUser != null and currentUser.canManageScoutNotes()}" th:href="@{/scout-notes}"><strong>新增球探笔记</strong><span>触发器校验新增数据</span></a>
+                <a class="quick-card" th:href="@{/stats-query}"><strong>查询球员表现</strong><span>基于视图汇总比赛表现</span></a>
+                <a class="quick-card" th:href="@{/games}"><strong>管理比赛</strong><span>查看详情与事务删除</span></a>
+                <a class="quick-card" th:if="${currentUser != null and currentUser.isAdmin()}" th:href="@{/stats-update}"><strong>更新比赛数据</strong><span>调用存储过程修改统计</span></a>
+            </section>
+
+            <div class="grid-2">
+                <section class="card">
+                    <div class="card-header">
+                        <h2>最近比赛</h2>
+                        <a class="btn btn-secondary" th:href="@{/games}">查看全部</a>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                        <tr><th>比赛ID</th><th>日期</th><th>主队</th><th>客队</th><th>比分</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="game : ${dashboardPage.recentGames}">
+                            <td th:text="${game.gameId}">1</td>
+                            <td th:text="${game.gameDate}">2026-04-01</td>
+                            <td>
+                                <span class="team-chip">
+                                    <img class="team-logo mini" th:src="@{'/images/teams/' + ${game.homeTeamAbbr} + '.svg?v=20260607'}"
+                                         onerror="this.src='/images/teams/default-team.svg'" alt="">
+                                    <span th:text="${game.homeTeamDisplayName}">湖人</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="team-chip">
+                                    <img class="team-logo mini" th:src="@{'/images/teams/' + ${game.awayTeamAbbr} + '.svg?v=20260607'}"
+                                         onerror="this.src='/images/teams/default-team.svg'" alt="">
+                                    <span th:text="${game.awayTeamDisplayName}">勇士</span>
+                                </span>
+                            </td>
+                            <td><strong th:text="${game.homeScore + ' : ' + game.awayScore}">112 : 108</strong></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="card">
+                    <div class="card-header">
+                        <h2>球员状态分布</h2>
+                    </div>
+                    <div class="status-panel">
+                        <div class="ring">
+                            <strong th:text="${dashboardPage.activePlayerCount + dashboardPage.retiredPlayerCount}">8</strong>
+                            <span>总球员</span>
+                        </div>
+                        <div class="status-bars">
+                            <div>
+                                <label>现役球员 <b th:text="${dashboardPage.activePlayerCount}">6</b></label>
+                                <div class="progress"><span th:style="'width:' + ${dashboardPage.activePlayerCount * 100 / (dashboardPage.activePlayerCount + dashboardPage.retiredPlayerCount)} + '%'"></span></div>
+                            </div>
+                            <div>
+                                <label>退役球员 <b th:text="${dashboardPage.retiredPlayerCount}">2</b></label>
+                                <div class="progress muted"><span th:style="'width:' + ${dashboardPage.retiredPlayerCount * 100 / (dashboardPage.activePlayerCount + dashboardPage.retiredPlayerCount)} + '%'"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="card">
+                <div class="card-header"><h2>球员场均得分 TOP 5</h2></div>
+                <div class="bar-list">
+                    <div class="bar-row" th:each="player : ${dashboardPage.topPlayers}">
+                        <img class="avatar" th:src="@{'/images/players/player-' + ${player.playerId} + '.png'}" onerror="this.src='/images/players/default-player.svg'" alt="">
+                        <div class="bar-meta">
+                            <strong th:text="${player.playerName}">Stephen Curry</strong>
+                            <span th:text="${player.teamName}">Warriors</span>
+                        </div>
+                        <div class="bar-track">
+                            <span th:style="'width:' + ${player.avgPoints.intValue() * 2} + '%'"></span>
+                        </div>
+                        <b th:text="${player.avgPoints}">33.50</b>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/app.js(v=20260606v4)}"></script>
+</body>
+</html>
+
+
+

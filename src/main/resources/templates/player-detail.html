@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>球员详情 - 篮球数据管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260606v4)}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar(${activeMenu})}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/header :: header(${pageTitle})}"></div>
+        <section class="content player-detail-page">
+            <section class="player-profile-top">
+                <div class="player-photo-card">
+                    <img class="player-avatar-lg" th:src="@{${profile.photoUrl}}"
+                         onerror="this.src='/images/players/default-player.svg'" alt="">
+                </div>
+                <div class="player-summary-card">
+                    <div class="player-title-row">
+                        <div>
+                            <h2 th:text="${profile.displayName}">詹姆斯</h2>
+                            <p th:text="${profile.name + ' / ' + profile.position + ' / ' + profile.statusText}">
+                                LeBron James / SF / 现役
+                            </p>
+                        </div>
+                        <a class="btn btn-secondary" th:href="@{/players}">返回列表</a>
+                    </div>
+                    <div class="player-team-line">
+                        <img class="team-logo" th:src="@{'/images/teams/' + ${profile.teamAbbr} + '.svg?v=20260607'}"
+                             onerror="this.src='/images/teams/default-team.svg'" alt="">
+                        <div>
+                            <strong th:text="${profile.teamDisplayName}">湖人</strong>
+                            <span th:text="${profile.teamName}">Los Angeles Lakers</span>
+                        </div>
+                    </div>
+                    <div class="profile-stat-grid">
+                        <div class="profile-stat-card primary">
+                            <span>场均得分</span>
+                            <strong th:text="${profile.avgPoints}">25.4</strong>
+                        </div>
+                        <div class="profile-stat-card">
+                            <span>场均篮板</span>
+                            <strong th:text="${profile.avgRebounds}">9.0</strong>
+                        </div>
+                        <div class="profile-stat-card">
+                            <span>场均助攻</span>
+                            <strong th:text="${profile.avgAssists}">5.6</strong>
+                        </div>
+                        <div class="profile-stat-card">
+                            <span>场均抢断</span>
+                            <strong th:text="${profile.avgSteals}">2.0</strong>
+                        </div>
+                        <div class="profile-stat-card">
+                            <span>场均盖帽</span>
+                            <strong th:text="${profile.avgBlocks}">1.8</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="player-insight-grid">
+                <div class="card chart-panel">
+                    <div class="card-header compact">
+                        <div>
+                            <h2>比赛走势</h2>
+                            <p>展示该球员每场比赛的得分、篮板和助攻变化。</p>
+                        </div>
+                    </div>
+                    <div class="chart-frame">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+                <div class="card chart-panel">
+                    <div class="card-header compact">
+                        <div>
+                            <h2>能力分布</h2>
+                            <p>按五项场均数据生成雷达图。</p>
+                        </div>
+                    </div>
+                    <div class="chart-frame radar-frame">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>最近比赛表现</h2>
+                        <p>按比赛日期倒序展示，便于答辩时说明明细数据来源。</p>
+                    </div>
+                    <span class="count-label" th:text="${'共 ' + profile.gameStats().size() + ' 场'}">共 0 场</span>
+                </div>
+                <table class="data-table compact-table">
+                    <thead>
+                    <tr>
+                        <th>比赛ID</th>
+                        <th>日期</th>
+                        <th>得分</th>
+                        <th>篮板</th>
+                        <th>助攻</th>
+                        <th>抢断</th>
+                        <th>盖帽</th>
+                        <th>综合贡献</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="game : ${profile.gameStats()}">
+                        <td th:text="${game.gameId()}">42400407</td>
+                        <td th:text="${game.gameDate()}">2025-06-22</td>
+                        <td><strong th:text="${game.points()}">25</strong></td>
+                        <td th:text="${game.rebounds()}">8</td>
+                        <td th:text="${game.assists()}">7</td>
+                        <td th:text="${game.steals()}">1</td>
+                        <td th:text="${game.blocks()}">1</td>
+                        <td>
+                            <span class="badge"
+                                  th:text="${game.points() + game.rebounds() + game.assists() + game.steals() + game.blocks()}">
+                                35
+                            </span>
+                        </td>
+                    </tr>
+                    <tr th:if="${profile.gameStats().isEmpty()}">
+                        <td colspan="8" class="empty-cell">暂无比赛表现数据</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/app.js(v=20260606v4)}"></script>
+<script th:inline="javascript">
+    const profile = {
+        labels: /*[[${profile.gameStats().![gameDate]}]]*/ [],
+        points: /*[[${profile.gameStats().![points]}]]*/ [],
+        rebounds: /*[[${profile.gameStats().![rebounds]}]]*/ [],
+        assists: /*[[${profile.gameStats().![assists]}]]*/ [],
+        averages: [
+            /*[[${profile.avgPoints}]]*/ 0,
+            /*[[${profile.avgRebounds}]]*/ 0,
+            /*[[${profile.avgAssists}]]*/ 0,
+            /*[[${profile.avgSteals}]]*/ 0,
+            /*[[${profile.avgBlocks}]]*/ 0
+        ]
+    };
+
+    function buildCharts() {
+        if (!window.Chart) {
+            return;
+        }
+        const trendCanvas = document.getElementById('trendChart');
+        const radarCanvas = document.getElementById('radarChart');
+        if (!trendCanvas || !radarCanvas) {
+            return;
+        }
+        const labelStep = Math.max(1, Math.ceil(profile.labels.length / 8));
+        new Chart(trendCanvas, {
+            type: 'line',
+            data: {
+                labels: profile.labels,
+                datasets: [
+                    {label: '得分', data: profile.points, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.12)', fill: true, tension: 0.35, borderWidth: 3, pointRadius: 3},
+                    {label: '篮板', data: profile.rebounds, borderColor: '#16a34a', backgroundColor: 'transparent', tension: 0.35, borderWidth: 2, pointRadius: 2},
+                    {label: '助攻', data: profile.assists, borderColor: '#f59e0b', backgroundColor: 'transparent', tension: 0.35, borderWidth: 2, pointRadius: 2}
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {mode: 'index', intersect: false},
+                plugins: {
+                    legend: {position: 'bottom', labels: {boxWidth: 18, usePointStyle: true}},
+                    tooltip: {backgroundColor: '#10213d', padding: 12}
+                },
+                scales: {
+                    x: {
+                        grid: {display: false},
+                        ticks: {
+                            callback: function (value, index) {
+                                return index % labelStep === 0 ? this.getLabelForValue(value) : '';
+                            },
+                            maxRotation: 0
+                        }
+                    },
+                    y: {beginAtZero: true, grid: {color: '#eef2f7'}}
+                }
+            }
+        });
+
+        const radarMax = Math.max(10, Math.ceil(Math.max(...profile.averages) / 5) * 5 + 5);
+        new Chart(radarCanvas, {
+            type: 'radar',
+            data: {
+                labels: ['得分', '篮板', '助攻', '抢断', '盖帽'],
+                datasets: [{
+                    label: '场均数据',
+                    data: profile.averages,
+                    backgroundColor: 'rgba(37,99,235,0.18)',
+                    borderColor: '#2563eb',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#2563eb',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {legend: {display: false}},
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        suggestedMax: radarMax,
+                        grid: {color: '#e2e8f0'},
+                        angleLines: {color: '#e2e8f0'},
+                        pointLabels: {color: '#334155', font: {size: 13, weight: '700'}}
+                    }
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', buildCharts);
+</script>
+</body>
+</html>

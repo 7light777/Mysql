@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>球员档案 - 篮球数据管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260606v2)}">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar(${activeMenu})}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/header :: header(${pageTitle})}"></div>
+        <section class="content">
+            <section class="card">
+                <div class="section-title">
+                    <h2>球员档案查询</h2>
+                    <p>按姓名、球队、位置和状态筛选球员基础信息。</p>
+                </div>
+                <form class="filter-form filter-form-wide" th:action="@{/players}" method="get">
+                    <input type="text" name="playerName" placeholder="球员姓名" th:value="${playerName}">
+                    <select name="teamId">
+                        <option value="">全部球队</option>
+                        <option th:each="team : ${teams}" th:value="${team.teamId}"
+                                th:text="${team.teamDisplayName + ' / ' + team.teamAbbr}"
+                                th:selected="${teamId == team.teamId}">凯尔特人 / BOS</option>
+                    </select>
+                    <select name="position">
+                        <option value="">全部位置</option>
+                        <option th:each="pos : ${positions}" th:value="${pos}" th:text="${pos}"
+                                th:selected="${position == pos}">PG</option>
+                    </select>
+                    <select name="status">
+                        <option value="">全部状态</option>
+                        <option value="Active" th:selected="${status == 'Active'}">现役</option>
+                        <option value="Retired" th:selected="${status == 'Retired'}">退役</option>
+                    </select>
+                    <button class="btn btn-primary" type="submit">查询</button>
+                    <a class="btn btn-secondary" th:href="@{/players}">重置</a>
+                </form>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <h2>球员档案</h2>
+                    <span class="count-label" th:text="${'共 ' + players.size() + ' 名球员'}">共 0 名球员</span>
+                </div>
+                <table class="data-table player-table">
+                    <thead>
+                    <tr>
+                        <th>球员ID</th>
+                        <th>头像</th>
+                        <th>姓名</th>
+                        <th>原名</th>
+                        <th>所属球队</th>
+                        <th>位置</th>
+                        <th>状态</th>
+                        <th>出场次数</th>
+                        <th>场均得分</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="player : ${players}">
+                        <td th:text="${player.playerId}">2544</td>
+                        <td>
+                            <img class="avatar" th:src="@{${player.photoUrl}}"
+                                 onerror="this.src='/images/players/default-player.svg'" alt="">
+                        </td>
+                        <td>
+                            <a th:href="@{'/players/' + ${player.playerId}}" class="name-link">
+                            <strong class="name-main ellipsis" th:text="${player.displayName}">詹姆斯</strong>
+                            </a>
+                        </td>
+                        <td>
+                            <span class="muted ellipsis max-name" th:text="${player.originalName ?: '—'}">LeBron James</span>
+                        </td>
+                        <td>
+                            <span class="team-chip">
+                                <img class="team-logo mini" th:src="@{'/images/teams/' + ${player.teamAbbr} + '.svg?v=20260607'}"
+                                     onerror="this.src='/images/teams/default-team.svg'" alt="">
+                                <span th:text="${player.teamDisplayName}">湖人</span>
+                            </span>
+                        </td>
+                        <td><span class="badge" th:text="${player.position}">SF</span></td>
+                        <td>
+                            <span class="badge" th:classappend="${player.status == 'Active'} ? ' badge-green' : ' badge-gray'"
+                                  th:text="${player.statusText}">现役</span>
+                        </td>
+                        <td th:text="${player.gamesPlayed}">16</td>
+                        <td th:text="${player.avgPoints}">24.50</td>
+                        <td class="actions">
+                            <div class="btn-group">
+                            <a class="btn btn-secondary" th:href="@{/stats-query(playerName=${player.name})}">查看表现</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${players.isEmpty()}">
+                        <td colspan="10" class="empty-cell">暂无符合条件的数据</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/app.js(v=20260606v4)}"></script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>篮球数据管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260606v2)}">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar(${activeMenu})}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/header :: header(${pageTitle})}"></div>
+        <section class="content">
+            <p>此文件作为公共布局参考，具体页面使用相同片段组合渲染。</p>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/app.js(v=20260606v4)}"></script>
+</body>
+</html>
+
+
+

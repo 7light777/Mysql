@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yjt.basketball.mapper.ScoutNoteMapper">
+
+    <select id="selectScoutNotes" resultType="com.yjt.basketball.dto.row.ScoutNoteRow">
+        SELECT sn.note_id AS noteId,
+               sn.player_id AS playerId,
+               p.name AS playerName,
+               t.team_name AS teamName,
+               sn.content AS content,
+               sn.potential_rating AS potentialRating,
+               sn.note_date AS noteDate
+        FROM ScoutNote sn
+        JOIN Player p ON p.player_id = sn.player_id
+        LEFT JOIN ActivePlayer ap ON ap.player_id = p.player_id
+        LEFT JOIN Team t ON t.team_id = ap.current_team_id
+        <where>
+            <if test="playerName != null and playerName != ''">
+                AND p.name LIKE CONCAT('%', #{playerName}, '%')
+            </if>
+            <if test="minRating != null">
+                AND sn.potential_rating &gt;= #{minRating}
+            </if>
+            <if test="maxRating != null">
+                AND sn.potential_rating &lt;= #{maxRating}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND sn.content LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY sn.note_date DESC, sn.note_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectById" resultType="com.yjt.basketball.entity.ScoutNote">
+        SELECT note_id AS noteId,
+               player_id AS playerId,
+               note_date AS noteDate,
+               content AS content,
+               potential_rating AS potentialRating
+        FROM ScoutNote
+        WHERE note_id = #{noteId}
+    </select>
+
+    <insert id="insertScoutNote" parameterType="com.yjt.basketball.entity.ScoutNote"
+            useGeneratedKeys="true" keyProperty="noteId" keyColumn="note_id">
+        INSERT INTO ScoutNote(player_id, note_date, content, potential_rating)
+        VALUES(#{playerId}, #{noteDate}, #{content}, #{potentialRating})
+    </insert>
+
+    <update id="updateScoutNote" parameterType="com.yjt.basketball.entity.ScoutNote">
+        UPDATE ScoutNote
+        SET content = #{content},
+            potential_rating = #{potentialRating},
+            note_date = #{noteDate}
+        WHERE note_id = #{noteId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM ScoutNote
+        WHERE note_id = #{noteId}
+    </delete>
+</mapper>

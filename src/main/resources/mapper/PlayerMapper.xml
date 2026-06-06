@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yjt.basketball.mapper.PlayerMapper">
+
+    <select id="selectPlayers" resultType="com.yjt.basketball.dto.row.PlayerListRow">
+        SELECT p.player_id AS playerId,
+               p.name AS name,
+               p.position AS position,
+               ap.current_team_id AS currentTeamId,
+               t.team_name AS teamName,
+               CASE
+                   WHEN ap.player_id IS NOT NULL THEN 'Active'
+                   WHEN rp.player_id IS NOT NULL THEN 'Retired'
+                   ELSE 'Unknown'
+               END AS status,
+               COUNT(pgs.game_id) AS gamesPlayed,
+               ROUND(COALESCE(AVG(pgs.points), 0), 2) AS avgPoints
+        FROM Player p
+        LEFT JOIN ActivePlayer ap ON ap.player_id = p.player_id
+        LEFT JOIN RetiredPlayer rp ON rp.player_id = p.player_id
+        LEFT JOIN Team t ON t.team_id = ap.current_team_id
+        LEFT JOIN PlayerGameStats pgs ON pgs.player_id = p.player_id
+        <where>
+            <if test="playerName != null and playerName != ''">
+                AND p.name LIKE CONCAT('%', #{playerName}, '%')
+            </if>
+            <if test="teamId != null">
+                AND ap.current_team_id = #{teamId}
+            </if>
+            <if test="position != null and position != ''">
+                AND p.position = #{position}
+            </if>
+            <if test="status != null and status == 'Active'">
+                AND ap.player_id IS NOT NULL
+            </if>
+            <if test="status != null and status == 'Retired'">
+                AND rp.player_id IS NOT NULL
+            </if>
+        </where>
+        GROUP BY p.player_id, p.name, p.position, ap.current_team_id, t.team_name,
+                 ap.player_id, rp.player_id
+        ORDER BY COALESCE(t.team_name, 'ZZZ'), p.name
+        LIMIT 300
+    </select>
+
+    <select id="selectTeamOptions" resultType="com.yjt.basketball.dto.row.TeamOptionRow">
+        SELECT team_id AS teamId,
+               team_name AS teamName
+        FROM Team
+        ORDER BY team_name
+    </select>
+
+    <select id="selectPlayerGamePoints" resultType="com.yjt.basketball.dto.row.PlayerGamePointRow">
+        SELECT g.game_id AS gameId,
+               g.game_date AS gameDate,
+               pgs.points AS points,
+               pgs.rebounds AS rebounds,
+               pgs.assists AS assists,
+               pgs.steals AS steals,
+               pgs.blocks AS blocks
+        FROM PlayerGameStats pgs
+        JOIN Game g ON g.game_id = pgs.game_id
+        WHERE pgs.player_id = #{playerId}
+        ORDER BY g.game_date ASC
+    </select>
+</mapper>

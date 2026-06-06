@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>球探报告 - 篮球数据管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260606v2)}">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar(${activeMenu})}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/header :: header(${pageTitle})}"></div>
+        <section class="content">
+            <div class="notice">本页面新增球探笔记时由数据库触发器进行合法性校验。</div>
+
+            <section class="card">
+                <div class="card-header">
+                    <div class="section-title tight">
+                        <h2>球探报告管理</h2>
+                        <p>支持查询、新增、编辑和删除球员球探笔记。</p>
+                    </div>
+                    <button class="btn btn-primary" id="openScoutModal" type="button"
+                            th:if="${currentUser != null and currentUser.canManageScoutNotes()}">新增笔记</button>
+                </div>
+                <form id="scoutSearchForm" class="filter-form filter-form-wide">
+                    <input type="text" name="playerName" placeholder="球员姓名">
+                    <input type="number" name="minRating" placeholder="最低评分" min="1" max="10">
+                    <input type="number" name="maxRating" placeholder="最高评分" min="1" max="10">
+                    <input type="text" name="keyword" placeholder="笔记关键词">
+                    <button class="btn btn-primary" type="submit">查询</button>
+                    <button class="btn btn-secondary" type="reset" id="scoutSearchReset">重置</button>
+                </form>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <h2>球探报告列表</h2>
+                    <span id="scoutCount" class="count-label" th:text="${'共 ' + notes.size() + ' 条记录'}">共 0 条记录</span>
+                </div>
+                <div id="scoutMessage" class="message hidden"></div>
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>球员</th>
+                        <th>球队</th>
+                        <th>潜力评分</th>
+                        <th>笔记摘要</th>
+                        <th>记录日期</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="scoutNotesBody">
+                    <tr th:each="note : ${notes}" th:id="${'note-row-' + note.noteId}">
+                        <td class="player-cell">
+                            <div class="cell-inner">
+                            <img class="avatar" th:src="@{'/images/players/player-' + ${note.playerId} + '.png'}"
+                                 onerror="this.src='/images/players/default-player.svg'" alt="">
+                            <span>
+                                <strong th:text="${note.playerDisplayName}">亚历山大</strong>
+                                <small th:if="${note.playerDisplayName != note.playerName}" th:text="${note.playerName}">SGA</small>
+                            </span>
+                            </div>
+                        </td>
+                        <td th:text="${note.teamDisplayName}">雷霆</td>
+                        <td><span class="rating" th:text="${note.potentialRating + '/10'}">8/10</span></td>
+                        <td><span class="ellipsis note-summary" th:text="${note.content}">季后赛中持球进攻稳定。</span></td>
+                        <td th:text="${note.noteDate ?: '未知'}">2025-06-01</td>
+                        <td class="actions">
+                            <div class="btn-group">
+                            <button class="btn btn-secondary view-note-btn" type="button"
+                                    th:data-content="${note.content}">查看</button>
+                            <button class="btn btn-primary edit-note-btn" type="button"
+                                    th:if="${currentUser != null and currentUser.canManageScoutNotes()}"
+                                    th:data-note-id="${note.noteId}"
+                                    th:data-content="${note.content}"
+                                    th:data-rating="${note.potentialRating}"
+                                    th:data-date="${note.noteDate}">编辑</button>
+                            <button class="btn btn-danger delete-note-btn" type="button"
+                                    th:if="${currentUser != null and currentUser.canManageScoutNotes()}"
+                                    th:data-note-id="${note.noteId}">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${notes.isEmpty()}"><td colspan="6" class="empty-cell">暂无球探报告</td></tr>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+    </main>
+</div>
+
+<div class="modal-mask hidden" id="scoutModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="scoutModalTitle">新增球探笔记</h2>
+            <button class="icon-btn" type="button" data-close-modal>x</button>
+        </div>
+        <form id="scoutNoteForm" class="form-grid">
+            <input type="hidden" name="noteId">
+            <label class="full">球员
+                <select name="playerId" required>
+                    <option th:each="player : ${players}" th:value="${player.playerId}"
+                            th:text="${player.originalName == null || player.originalName == '' ? player.displayName : player.displayName + ' / ' + player.originalName}">亚历山大 / Shai</option>
+                </select>
+            </label>
+            <label>潜力评分
+                <input type="number" name="potentialRating" min="1" max="10" value="8" required>
+            </label>
+            <label>记录日期
+                <input type="date" name="noteDate">
+            </label>
+            <label class="full">笔记内容
+                <textarea name="content" rows="7" placeholder="请输入球探笔记内容"></textarea>
+            </label>
+            <div class="form-actions full">
+                <button class="btn btn-primary" type="submit">保存</button>
+                <button class="btn btn-secondary" type="button" data-close-modal>取消</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/app.js(v=20260606v4)}"></script>
+</body>
+</html>
+
+
+

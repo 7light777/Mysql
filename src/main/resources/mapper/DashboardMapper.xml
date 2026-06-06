@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yjt.basketball.mapper.DashboardMapper">
+
+    <select id="selectTopPlayersForPage" resultType="com.yjt.basketball.dto.row.TopPlayerRow">
+        SELECT p.player_id AS playerId,
+               p.name AS playerName,
+               COALESCE(t.team_name, 'Retired') AS teamName,
+               ROUND(AVG(pgs.points), 2) AS avgPoints
+        FROM PlayerGameStats pgs
+        JOIN Player p ON p.player_id = pgs.player_id
+        LEFT JOIN ActivePlayer ap ON ap.player_id = p.player_id
+        LEFT JOIN Team t ON t.team_id = ap.current_team_id
+        GROUP BY p.player_id, p.name, t.team_name
+        ORDER BY AVG(pgs.points) DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="countTeams" resultType="long">
+        SELECT COUNT(*) FROM Team
+    </select>
+
+    <select id="countPlayers" resultType="long">
+        SELECT COUNT(*) FROM Player
+    </select>
+
+    <select id="countGames" resultType="long">
+        SELECT COUNT(*) FROM Game
+    </select>
+
+    <select id="countStats" resultType="long">
+        SELECT COUNT(*) FROM PlayerGameStats
+    </select>
+
+    <select id="countActivePlayers" resultType="long">
+        SELECT COUNT(*) FROM ActivePlayer
+    </select>
+
+    <select id="countRetiredPlayers" resultType="long">
+        SELECT COUNT(*) FROM RetiredPlayer
+    </select>
+</mapper>

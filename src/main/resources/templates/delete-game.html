@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>删除比赛记录 - 篮球数据管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260606v2)}">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar(${activeMenu})}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/header :: header(${pageTitle})}"></div>
+        <section class="content">
+            <div class="notice">
+                本页面通过 @Transactional 事务删除比赛及其球员表现记录。
+                双方总分达到 230 分及以上的重点比赛会在删除 PlayerGameStats 后抛出异常，演示事务回滚。
+            </div>
+            <section class="card">
+                <div class="card-header"><h2>比赛删除演示</h2></div>
+                <div id="deleteGameMessage" class="message hidden"></div>
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>比赛ID</th>
+                        <th>日期</th>
+                        <th>主队</th>
+                        <th>客队</th>
+                        <th>比分</th>
+                        <th>比赛表现记录数</th>
+                        <th>删除规则</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="game : ${games}" th:id="${'game-row-' + game.gameId}">
+                        <td th:text="${game.gameId}">4</td>
+                        <td th:text="${game.gameDate}">2026-04-09</td>
+                        <td th:text="${game.homeTeamName}">Heat</td>
+                        <td th:text="${game.awayTeamName}">Lakers</td>
+                        <td><strong th:text="${game.homeScore + ' : ' + game.awayScore}">96 : 102</strong></td>
+                        <td th:text="${game.statsCount}">3</td>
+                        <td>
+                            <span class="badge badge-warning" th:if="${game.homeScore + game.awayScore >= 230}">重点比赛，回滚演示</span>
+                            <span class="badge badge-green" th:if="${game.homeScore + game.awayScore < 230}">普通比赛，可删除</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger delete-game-btn" type="button" th:data-game-id="${game.gameId}">
+                                删除
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/app.js(v=20260606v4)}"></script>
+</body>
+</html>
+
+
+

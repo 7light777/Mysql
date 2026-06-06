@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yjt.basketball.mapper.GameMapper">
+
+    <sql id="gameListColumns">
+        g.game_id AS gameId,
+        g.game_date AS gameDate,
+        g.home_team_id AS homeTeamId,
+        ht.team_name AS homeTeamName,
+        g.away_team_id AS awayTeamId,
+        at.team_name AS awayTeamName,
+        g.home_score AS homeScore,
+        g.away_score AS awayScore,
+        COUNT(pgs.player_id) AS statsCount
+    </sql>
+
+    <sql id="gameListJoin">
+        FROM Game g
+        JOIN Team ht ON ht.team_id = g.home_team_id
+        JOIN Team at ON at.team_id = g.away_team_id
+        LEFT JOIN PlayerGameStats pgs ON pgs.game_id = g.game_id
+    </sql>
+
+    <sql id="gameListGroupBy">
+        GROUP BY g.game_id, g.game_date, g.home_team_id, ht.team_name,
+                 g.away_team_id, at.team_name, g.home_score, g.away_score
+    </sql>
+
+    <select id="selectGames" resultType="com.yjt.basketball.dto.row.GameListRow">
+        SELECT
+        <include refid="gameListColumns"/>
+        <include refid="gameListJoin"/>
+        <where>
+            <if test="gameId != null">
+                AND g.game_id = #{gameId}
+            </if>
+            <if test="teamName != null and teamName != ''">
+                AND (ht.team_name LIKE CONCAT('%', #{teamName}, '%')
+                     OR at.team_name LIKE CONCAT('%', #{teamName}, '%'))
+            </if>
+            <if test="startDate != null">
+                AND g.game_date &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND g.game_date &lt;= #{endDate}
+            </if>
+        </where>
+        <include refid="gameListGroupBy"/>
+        ORDER BY g.game_date DESC, g.game_id DESC
+    </select>
+
+    <select id="selectRecentGames" resultType="com.yjt.basketball.dto.row.GameListRow">
+        SELECT
+        <include refid="gameListColumns"/>
+        <include refid="gameListJoin"/>
+        <include refid="gameListGroupBy"/>
+        ORDER BY g.game_date DESC, g.game_id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectGameById" resultType="com.yjt.basketball.dto.row.GameListRow">
+        SELECT
+        <include refid="gameListColumns"/>
+        <include refid="gameListJoin"/>
+        WHERE g.game_id = #{gameId}
+        <include refid="gameListGroupBy"/>
+    </select>
+
+    <select id="selectGameStats" resultType="com.yjt.basketball.dto.row.GameStatsRowData">
+        SELECT ranked.player_id AS playerId,
+               ranked.player_name AS playerName,
+               ranked.position AS position,
+               ranked.team_id AS teamId,
+               ranked.team_name AS teamName,
+               ranked.points AS points,
+               ranked.rebounds AS rebounds,
+               ranked.assists AS assists,
+               ranked.steals AS steals,
+               ranked.blocks AS blocks,
+               ranked.team_rank AS teamRank
+        FROM (
+            SELECT p.player_id,
+                   p.name AS player_name,
+                   p.position,
+                   ap.current_team_id AS team_id,
+                   t.team_name AS team_name,
+                   pgs.points,
+                   pgs.rebounds,
+                   pgs.assists,
+                   pgs.steals,
+                   pgs.blocks,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY ap.current_team_id
+                       ORDER BY pgs.points DESC, pgs.assists DESC, pgs.rebounds DESC, p.name
+                   ) AS team_rank
+            FROM PlayerGameStats pgs
+            JOIN Player p ON p.player_id = pgs.player_id
+            LEFT JOIN ActivePlayer ap ON ap.player_id = p.player_id
+            LEFT JOIN Team t ON t.team_id = ap.current_team_id
+            WHERE pgs.game_id = #{gameId}
+        ) ranked
+        ORDER BY
+            CASE WHEN ranked.team_id = #{homeTeamId} THEN 0
+                 WHEN ranked.team_id = #{awayTeamId} THEN 1
+                 ELSE 2 END,
+            ranked.points DESC,
+            ranked.player_name
+    </select>
+
+    <select id="selectGamePlayers" resultType="com.yjt.basketball.dto.row.GamePlayerStatsRow">
+        SELECT p.player_id AS playerId,
+               p.name AS playerName,
+               p.position AS position,
+               ap.current_team_id AS teamId,
+               t.team_name AS teamName,
+               pgs.points AS points,
+               pgs.rebounds AS rebounds,
+               pgs.assists AS assists,
+               pgs.steals AS steals,
+               pgs.blocks AS blocks
+        FROM PlayerGameStats pgs
+        JOIN Player p ON p.player_id = pgs.player_id
+        LEFT JOIN ActivePlayer ap ON ap.player_id = p.player_id
+        LEFT JOIN Team t ON t.team_id = ap.current_team_id
+        WHERE pgs.game_id = #{gameId}
+        ORDER BY
+            CASE WHEN ap.current_team_id = #{homeTeamId} THEN 0
+                 WHEN ap.current_team_id = #{awayTeamId} THEN 1
+                 ELSE 2 END,
+            pgs.points DESC,
+            p.name
+    </select>
+
+    <select id="selectCurrentStats" resultType="com.yjt.basketball.dto.row.CurrentStatsRow">
+        SELECT pgs.player_id AS playerId,
+               p.name AS playerName,
+               p.position AS position,
+               pgs.game_id AS gameId,
+               ap.current_team_id AS teamId,
+               t.team_name AS teamName,
+               pgs.points AS points,
+               pgs.rebounds AS rebounds,
+               pgs.assists AS assists,
+               pgs.steals AS steals,
+               pgs.blocks AS blocks
+        FROM PlayerGameStats pgs
+        JOIN Player p ON p.player_id = pgs.player_id
+        LEFT JOIN ActivePlayer ap ON ap.player_id = p.player_id
+        LEFT JOIN Team t ON t.team_id = ap.current_team_id
+        WHERE pgs.player_id = #{playerId}
+          AND pgs.game_id = #{gameId}
+    </select>
+
+    <select id="countGameById" resultType="int">
+        SELECT COUNT(*)
+        FROM Game
+        WHERE game_id = #{gameId}
+    </select>
+
+    <delete id="deletePlayerGameStatsByGameId">
+        DELETE FROM PlayerGameStats
+        WHERE game_id = #{gameId}
+    </delete>
+
+    <delete id="deleteGameById">
+        DELETE FROM Game
+        WHERE game_id = #{gameId}
+    </delete>
+</mapper>

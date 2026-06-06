@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="sidebar(activeMenu)">
+    <div class="brand">
+        <div class="brand-mark">B</div>
+        <div>
+            <strong>篮球数据管理系统</strong>
+            <span>Basketball DB</span>
+        </div>
+    </div>
+    <nav class="side-nav">
+        <a th:href="@{/dashboard}" th:classappend="${activeMenu == 'dashboard'} ? ' active' : ''">首页 / 仪表盘</a>
+        <a th:href="@{/players}" th:classappend="${activeMenu == 'players'} ? ' active' : ''">球员档案</a>
+        <a th:href="@{/games}" th:classappend="${activeMenu == 'games'} ? ' active' : ''">比赛管理</a>
+        <a th:href="@{/scout-notes}" th:classappend="${activeMenu == 'scoutNotes'} ? ' active' : ''">球探报告</a>
+        <a th:href="@{/stats-query}" th:classappend="${activeMenu == 'statsQuery'} ? ' active' : ''">数据分析</a>
+        <a th:if="${currentUser != null and currentUser.isAdmin()}" th:href="@{/stats-update}" th:classappend="${activeMenu == 'statsUpdate'} ? ' active' : ''">更新比赛数据</a>
+    </nav>
+</aside>
+</body>
+</html>

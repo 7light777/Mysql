@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 篮球数据管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260606v2)}">
+</head>
+<body class="login-page">
+<main class="login-shell">
+    <section class="login-card">
+        <div class="login-brand">
+            <div class="brand-mark">B</div>
+            <div>
+                <h1>篮球数据管理系统</h1>
+                <p>Basketball DB</p>
+            </div>
+        </div>
+        <div class="message error" th:if="${error != null}" th:text="${error}">用户名或密码错误</div>
+        <form th:action="@{/login}" method="post" class="login-form">
+            <label>用户名
+                <input type="text" name="username" th:value="${username}" placeholder="请输入用户名" required autofocus>
+            </label>
+            <label>密码
+                <input type="password" name="password" placeholder="请输入密码" required>
+            </label>
+            <button class="btn btn-primary" type="submit">登录</button>
+        </form>
+        <div class="login-hint">
+            <strong>测试账号</strong>
+            <span>管理员：admin / 123456</span>
+            <span>球探：scout / 123456</span>
+            <span>访客：viewer / 123456</span>
+        </div>
+    </section>
+</main>
+</body>
+</html>
+
+
+

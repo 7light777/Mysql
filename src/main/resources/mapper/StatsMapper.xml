@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yjt.basketball.mapper.StatsMapper">
+
+    <select id="selectPlayerGameDetails" resultType="com.yjt.basketball.dto.row.PlayerGameDetailRow">
+        SELECT player_id AS playerId,
+               player_name AS playerName,
+               game_id AS gameId,
+               game_date AS gameDate,
+               home_team AS homeTeam,
+               away_team AS awayTeam,
+               points AS points,
+               rebounds AS rebounds,
+               assists AS assists,
+               steals AS steals,
+               blocks AS blocks
+        FROM v_player_game_detail
+        <where>
+            <if test="playerName != null and playerName != ''">
+                AND player_name LIKE CONCAT('%', #{playerName}, '%')
+            </if>
+            <if test="gameId != null">
+                AND game_id = #{gameId}
+            </if>
+            <if test="teamName != null and teamName != ''">
+                AND (home_team LIKE CONCAT('%', #{teamName}, '%')
+                     OR away_team LIKE CONCAT('%', #{teamName}, '%'))
+            </if>
+            <if test="startDate != null">
+                AND game_date &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND game_date &lt;= #{endDate}
+            </if>
+        </where>
+        ORDER BY game_date DESC, game_id, points DESC
+    </select>
+
+    <update id="callUpdatePlayerGameStats" parameterType="com.yjt.basketball.dto.UpdateStatsRequest">
+        CALL sp_update_player_game_stats(
+            #{playerId},
+            #{gameId},
+            #{points},
+            #{rebounds},
+            #{assists},
+            #{steals},
+            #{blocks}
+        )
+    </update>
+</mapper>

@@ -1,0 +1,33 @@
+# Maven build output (all target directories)
+target/
+target-build/
+target-codex/
+target-mapper-final/
+target-mybatis/
+target-mybatis-manual/
+target-mybatis3-repo/
+target-namefix/
+target-namefix2/
+
+# IDE
+.m2/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Java
+*.class
+*.jar
+!src/main/resources/**/*.jar
+*.war
+
+# Logs
+*.log

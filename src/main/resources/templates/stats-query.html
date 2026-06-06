@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据分析 - 篮球数据管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260606v2)}">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar(${activeMenu})}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/header :: header(${pageTitle})}"></div>
+        <section class="content">
+            <div class="notice">本页面数据来源于视图 v_player_game_detail。</div>
+            <section class="card">
+                <div class="section-title">
+                    <h2>球员比赛表现查询</h2>
+                    <p>所有结果均由数据库视图 v_player_game_detail 返回。</p>
+                </div>
+                <form id="statsQueryForm" class="filter-form filter-form-wide">
+                    <input type="text" name="playerName" placeholder="球员姓名">
+                    <input type="number" name="gameId" placeholder="比赛ID">
+                    <input type="text" name="teamName" placeholder="球队名称">
+                    <input type="date" name="startDate">
+                    <input type="date" name="endDate">
+                    <button class="btn btn-primary" type="submit">查询</button>
+                    <button class="btn btn-secondary" type="reset" id="statsQueryReset">重置</button>
+                </form>
+            </section>
+            <section class="card">
+                <div class="card-header">
+                    <h2>视图查询结果</h2>
+                    <span id="statsResultCount" class="count-label">等待查询</span>
+                </div>
+                <div id="statsQueryMessage" class="message hidden"></div>
+                <table class="data-table">
+                    <thead>
+                    <tr><th>头像</th><th>球员姓名</th><th>比赛日期</th><th>主队</th><th>客队</th><th>得分</th><th>篮板</th><th>助攻</th><th>抢断</th><th>盖帽</th></tr>
+                    </thead>
+                    <tbody id="statsQueryBody"></tbody>
+                </table>
+            </section>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/app.js(v=20260606v4)}"></script>
+</body>
+</html>
+
+
+

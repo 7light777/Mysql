@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header class="topbar" th:fragment="header(pageTitle)">
+    <div>
+        <span class="breadcrumb">篮球数据管理系统</span>
+        <h1 th:text="${pageTitle}">首页 / 仪表盘</h1>
+    </div>
+    <div class="admin-box">
+        <span class="admin-dot"></span>
+        <span th:text="${'欢迎，' + (currentUser == null ? '访客' : currentUser.displayName())}">欢迎，管理员</span>
+        <span class="role-label" th:if="${currentUser != null}" th:text="${currentUser.roleText()}">管理员</span>
+        <form th:if="${currentUser != null}" th:action="@{/logout}" method="post" class="logout-form">
+            <button type="submit">退出登录</button>
+        </form>
+    </div>
+</header>
+</body>
+</html>

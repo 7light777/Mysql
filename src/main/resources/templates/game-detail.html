@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>比赛技术统计 - 篮球数据管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260606v2)}">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar(${activeMenu})}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/header :: header(${pageTitle})}"></div>
+        <section class="content">
+            <section class="score-card formal-score">
+                <div class="team-score">
+                    <img class="team-logo" th:src="@{'/images/teams/' + ${game.homeTeamAbbr} + '.svg?v=20260607'}"
+                         onerror="this.src='/images/teams/default-team.svg'" alt="">
+                    <div>
+                        <span th:text="${game.homeTeamDisplayName}">雷霆</span>
+                        <small th:text="${game.homeTeamName}">Oklahoma City Thunder</small>
+                    </div>
+                    <strong th:text="${game.homeScore}">103</strong>
+                </div>
+                <div class="vs">
+                    <b>VS</b>
+                    <span th:text="${game.gameDate}">2025-06-22</span>
+                    <small th:text="${'比赛ID ' + game.gameId}">比赛ID 42400407</small>
+                </div>
+                <div class="team-score right">
+                    <strong th:text="${game.awayScore}">91</strong>
+                    <div>
+                        <span th:text="${game.awayTeamDisplayName}">步行者</span>
+                        <small th:text="${game.awayTeamName}">Indiana Pacers</small>
+                    </div>
+                    <img class="team-logo" th:src="@{'/images/teams/' + ${game.awayTeamAbbr} + '.svg?v=20260607'}"
+                         onerror="this.src='/images/teams/default-team.svg'" alt="">
+                </div>
+            </section>
+
+            <div class="grid-2">
+                <section class="card">
+                    <div class="card-header">
+                        <h2 th:text="${game.homeTeamDisplayName + ' 球员表现'}">主队球员表现</h2>
+                    </div>
+                    <table class="data-table compact-table">
+                        <thead>
+                        <tr><th>球员</th><th>位置</th><th>阵容<br>角色</th><th>轮换<br>级别</th><th>得分</th><th>篮板</th><th>助攻</th><th>抢断</th><th>盖帽</th><th>操作</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="stat, iter : ${game.homeStats}"
+                            th:with="impact=${stat.points + stat.rebounds + stat.assists + stat.steals + stat.blocks},
+                                     lineupRole=${iter.index < 5 ? '首发' : '替补'},
+                                     rotationLevel=${impact >= 30 ? '核心轮换' : (impact >= 18 ? '主要轮换' : (impact >= 8 ? '轮换' : '边缘轮换'))}">
+                            <td class="player-cell">
+                                <div class="cell-inner">
+                                <img class="avatar" th:src="@{'/images/players/player-' + ${stat.playerId} + '.png'}"
+                                     onerror="this.src='/images/players/default-player.svg'" alt="">
+                                <span>
+                                    <strong th:text="${stat.playerDisplayName}">亚历山大</strong>
+                                    <small th:if="${stat.playerDisplayName != stat.playerName}" th:text="${stat.playerName}">SGA</small>
+                                </span>
+                                </div>
+                            </td>
+                            <td><span class="badge" th:text="${stat.position}">PG</span></td>
+                            <td><span class="badge" th:classappend="${lineupRole == '首发'} ? ' badge-green' : ' badge-gray'" th:text="${lineupRole}">首发</span></td>
+                            <td><span class="badge rotation-badge"
+                                      th:classappend="${rotationLevel == '核心轮换'} ? ' badge-core' : (${rotationLevel == '主要轮换'} ? ' badge-major' : (${rotationLevel == '边缘轮换'} ? ' badge-fringe' : ''))"
+                                      th:text="${rotationLevel}">核心轮换</span></td>
+                            <td th:text="${stat.points}">28</td>
+                            <td th:text="${stat.rebounds}">8</td>
+                            <td th:text="${stat.assists}">6</td>
+                            <td th:text="${stat.steals}">2</td>
+                            <td th:text="${stat.blocks}">1</td>
+                            <td><a class="btn btn-secondary" th:if="${currentUser != null and currentUser.isAdmin()}" th:href="@{/stats-update(gameId=${game.gameId},playerId=${stat.playerId})}">编辑数据</a></td>
+                        </tr>
+                        <tr th:if="${game.homeStats.isEmpty()}"><td colspan="10" class="empty-cell">暂无主队球员统计</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="card">
+                    <div class="card-header">
+                        <h2 th:text="${game.awayTeamDisplayName + ' 球员表现'}">客队球员表现</h2>
+                    </div>
+                    <table class="data-table compact-table">
+                        <thead>
+                        <tr><th>球员</th><th>位置</th><th>阵容<br>角色</th><th>轮换<br>级别</th><th>得分</th><th>篮板</th><th>助攻</th><th>抢断</th><th>盖帽</th><th>操作</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="stat, iter : ${game.awayStats}"
+                            th:with="impact=${stat.points + stat.rebounds + stat.assists + stat.steals + stat.blocks},
+                                     lineupRole=${iter.index < 5 ? '首发' : '替补'},
+                                     rotationLevel=${impact >= 30 ? '核心轮换' : (impact >= 18 ? '主要轮换' : (impact >= 8 ? '轮换' : '边缘轮换'))}">
+                            <td class="player-cell">
+                                <div class="cell-inner">
+                                <img class="avatar" th:src="@{'/images/players/player-' + ${stat.playerId} + '.png'}"
+                                     onerror="this.src='/images/players/default-player.svg'" alt="">
+                                <span>
+                                    <strong th:text="${stat.playerDisplayName}">哈利伯顿</strong>
+                                    <small th:if="${stat.playerDisplayName != stat.playerName}" th:text="${stat.playerName}">Tyrese Haliburton</small>
+                                </span>
+                                </div>
+                            </td>
+                            <td><span class="badge" th:text="${stat.position}">PG</span></td>
+                            <td><span class="badge" th:classappend="${lineupRole == '首发'} ? ' badge-green' : ' badge-gray'" th:text="${lineupRole}">首发</span></td>
+                            <td><span class="badge rotation-badge"
+                                      th:classappend="${rotationLevel == '核心轮换'} ? ' badge-core' : (${rotationLevel == '主要轮换'} ? ' badge-major' : (${rotationLevel == '边缘轮换'} ? ' badge-fringe' : ''))"
+                                      th:text="${rotationLevel}">核心轮换</span></td>
+                            <td th:text="${stat.points}">28</td>
+                            <td th:text="${stat.rebounds}">8</td>
+                            <td th:text="${stat.assists}">6</td>
+                            <td th:text="${stat.steals}">2</td>
+                            <td th:text="${stat.blocks}">1</td>
+                            <td><a class="btn btn-secondary" th:if="${currentUser != null and currentUser.isAdmin()}" th:href="@{/stats-update(gameId=${game.gameId},playerId=${stat.playerId})}">编辑数据</a></td>
+                        </tr>
+                        <tr th:if="${game.awayStats.isEmpty()}"><td colspan="10" class="empty-cell">暂无客队球员统计</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/app.js(v=20260606v4)}"></script>
+</body>
+</html>
+
+
+

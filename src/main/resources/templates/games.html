@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>比赛管理 - 篮球数据管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260606v2)}">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar(${activeMenu})}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/header :: header(${pageTitle})}"></div>
+        <section class="content">
+            <div class="notice">
+                本页面删除比赛时通过 @Transactional 事务同时删除 Game 与 PlayerGameStats。
+                若比赛双方总分达到 230 分及以上，系统会在删除 PlayerGameStats 后主动抛出异常，用于演示事务回滚。
+            </div>
+
+            <section class="card">
+                <div class="section-title">
+                    <h2>赛程与比分查询</h2>
+                    <p>按比赛ID、球队和日期范围筛选比赛记录。</p>
+                </div>
+                <form class="filter-form filter-form-wide" th:action="@{/games}" method="get">
+                    <input type="number" name="gameId" placeholder="比赛ID" th:value="${gameId}">
+                    <input type="text" name="teamName" placeholder="主队 / 客队" th:value="${teamName}">
+                    <input type="date" name="startDate" th:value="${startDate}">
+                    <input type="date" name="endDate" th:value="${endDate}">
+                    <button class="btn btn-primary" type="submit">查询</button>
+                    <a class="btn btn-secondary" th:href="@{/games}">重置</a>
+                </form>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <h2>赛程与比分管理</h2>
+                    <span class="count-label" th:text="${'共 ' + games.size() + ' 场比赛'}">共 0 场比赛</span>
+                </div>
+                <div id="deleteGameMessage" class="message hidden"></div>
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>比赛ID</th>
+                        <th>日期</th>
+                        <th>主队</th>
+                        <th>客队</th>
+                        <th>比分</th>
+                        <th>表现记录数</th>
+                        <th>删除规则</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="game : ${games}" th:id="${'game-row-' + game.gameId}">
+                        <td th:text="${game.gameId}">42400407</td>
+                        <td th:text="${game.gameDate}">2025-06-22</td>
+                        <td>
+                            <span class="team-chip">
+                                <img class="team-logo mini" th:src="@{'/images/teams/' + ${game.homeTeamAbbr} + '.svg?v=20260607'}"
+                                     onerror="this.src='/images/teams/default-team.svg'" alt="">
+                                <span>
+                                    <strong th:text="${game.homeTeamDisplayName}">雷霆</strong>
+                                    <small th:text="${game.homeTeamName}">Oklahoma City Thunder</small>
+                                </span>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="team-chip">
+                                <img class="team-logo mini" th:src="@{'/images/teams/' + ${game.awayTeamAbbr} + '.svg?v=20260607'}"
+                                     onerror="this.src='/images/teams/default-team.svg'" alt="">
+                                <span>
+                                    <strong th:text="${game.awayTeamDisplayName}">步行者</strong>
+                                    <small th:text="${game.awayTeamName}">Indiana Pacers</small>
+                                </span>
+                            </span>
+                        </td>
+                        <td><strong th:text="${game.homeScore + ' : ' + game.awayScore}">103 : 91</strong></td>
+                        <td th:text="${game.statsCount}">24</td>
+                        <td>
+                            <span class="badge badge-warning" th:if="${game.homeScore + game.awayScore >= 230}">重点比赛，回滚演示</span>
+                            <span class="badge badge-green" th:if="${game.homeScore + game.awayScore < 230}">普通比赛，可删除</span>
+                        </td>
+                        <td class="actions">
+                            <div class="btn-group">
+                            <a class="btn btn-primary" th:href="@{'/games/' + ${game.gameId}}">查看详情</a>
+                            <button class="btn btn-danger delete-game-btn" type="button" th:data-game-id="${game.gameId}"
+                                    th:if="${currentUser != null and currentUser.isAdmin()}">
+                                删除
+                            </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${games.isEmpty()}">
+                        <td colspan="8" class="empty-cell">未查询到比赛记录</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/app.js(v=20260606v4)}"></script>
+</body>
+</html>
+
+
