@@ -70,7 +70,7 @@ java -jar target-build/basketball-management-system-0.0.1-SNAPSHOT-boot.jar
 
 | 评分点 | 页面 | 接口 | 代码位置 |
 | --- | --- | --- | --- |
-| 含有事务应用的删除操作 | `/games` | `DELETE /api/games/{gameId}` | `GameService.deleteGameWithStats`，使用 `@Transactional` |
+| 含有事务应用的删除操作 | `/games` | `DELETE /api/games/{gameId}` | MySQL 事务过程 `sp_delete_game_with_stats_transaction` |
 | 触发器控制下的添加操作 | `/scout-notes` | `POST /api/scout-notes` | `03_trigger_procedure_view.sql` 中 `trg_scoutnote_before_insert` |
 | 存储过程控制下的更新操作 | `/stats-update` | `PUT /api/stats` | `StatsService.updateStats` 调用 `sp_update_player_game_stats` |
 | 含有视图的查询操作 | `/stats-query` | `GET /api/stats/details` | `StatsService.findDetails` 查询 `v_player_game_detail` |
@@ -88,7 +88,7 @@ java -jar target-build/basketball-management-system-0.0.1-SNAPSHOT-boot.jar
 ## 截图建议
 
 - 首页：统计卡片、快捷入口、最近比赛、Top 球员。
-- 比赛管理：顶部 `@Transactional` 说明、比赛列表、删除按钮。
+- 比赛管理：顶部 MySQL 事务过程说明、比赛列表、删除按钮。
 - 球探报告：触发器说明、查询区、新增/编辑/删除按钮。
 - 更新比赛数据：存储过程说明、四步流程、只显示本场球员的下拉框。
 - 数据分析：视图说明、查询条件、视图查询结果数量。

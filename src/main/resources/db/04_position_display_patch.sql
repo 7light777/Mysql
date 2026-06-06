@@ -1,7 +1,7 @@
 USE basketball_db;
 
 -- 回填 2024-25 NBA Playoffs 球员展示位置。
--- 说明：用于课程答辩页面展示，统一使用 PG / SG / SF / PF / C，避免页面出现空白或“未录入”。
+-- 说明：用于页面展示，统一使用 PG / SG / SF / PF / C，避免页面出现空白或“未录入”。
 
 UPDATE Player SET position = 'SF' WHERE player_id = 2544; -- LeBron James
 UPDATE Player SET position = 'SF' WHERE player_id = 200782; -- P.J. Tucker

@@ -216,7 +216,7 @@ curl "http://localhost:8080/api/stats/details?gameId=4"
 
 | 接口 | 数据库对象/代码点 | 报告章节 |
 | --- | --- | --- |
-| `DELETE /api/games/{gameId}` | `GameService.deleteGameWithStats` 上的 `@Transactional` | 含有事务应用的删除操作 |
+| `DELETE /api/games/{gameId}` | MySQL 事务过程 `sp_delete_game_with_stats_transaction` | 含有事务应用的删除操作 |
 | `POST /api/scout-notes` | `trg_scoutnote_before_insert` | 触发器控制下的添加操作 |
 | `PUT /api/stats` | `sp_update_player_game_stats` | 存储过程控制下的更新操作 |
 | `GET /api/stats/details` | `v_player_game_detail` | 含有视图的查询操作 |

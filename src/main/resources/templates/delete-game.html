@@ -13,8 +13,8 @@
         <div th:replace="~{fragments/header :: header(${pageTitle})}"></div>
         <section class="content">
             <div class="notice">
-                本页面通过 @Transactional 事务删除比赛及其球员表现记录。
-                双方总分达到 230 分及以上的重点比赛会在删除 PlayerGameStats 后抛出异常，演示事务回滚。
+                本页面通过 MySQL 事务过程 sp_delete_game_with_stats_transaction 删除比赛及其球员表现记录。
+                双方总分达到 230 分及以上的重点比赛会在删除 PlayerGameStats 后抛出异常，演示 ROLLBACK 回滚。
             </div>
             <section class="card">
                 <div class="card-header"><h2>比赛删除演示</h2></div>

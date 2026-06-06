@@ -73,6 +73,7 @@
                             <button class="btn btn-primary edit-note-btn" type="button"
                                     th:if="${currentUser != null and currentUser.canManageScoutNotes()}"
                                     th:data-note-id="${note.noteId}"
+                                    th:data-player-id="${note.playerId}"
                                     th:data-content="${note.content}"
                                     th:data-rating="${note.potentialRating}"
                                     th:data-date="${note.noteDate}">编辑</button>
@@ -121,9 +122,7 @@
     </div>
 </div>
 
-<script th:src="@{/js/app.js(v=20260606v4)}"></script>
+<script th:src="@{/js/app.js(v=20260607v1)}"></script>
 </body>
 </html>
-
-
 

@@ -168,4 +168,8 @@
         DELETE FROM Game
         WHERE game_id = #{gameId}
     </delete>
+
+    <update id="callDeleteGameWithStatsTransaction">
+        CALL sp_delete_game_with_stats_transaction(#{gameId})
+    </update>
 </mapper>

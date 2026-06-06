@@ -264,7 +264,7 @@ function installGameDelete() {
     document.querySelectorAll('.delete-game-btn').forEach(button => {
         button.addEventListener('click', async () => {
             const gameId = button.dataset.gameId;
-            const confirmed = window.confirm('确认删除该比赛吗？系统将通过事务先删除 PlayerGameStats，再删除 Game；若该比赛双方总分达到 230 分及以上，将主动触发异常并回滚。');
+            const confirmed = window.confirm('确认删除该比赛吗？系统将调用 MySQL 事务过程，先删除 PlayerGameStats，再删除 Game；若该比赛双方总分达到 230 分及以上，将主动触发异常并 ROLLBACK 回滚。');
             if (!confirmed) {
                 return;
             }
@@ -294,6 +294,7 @@ function installScoutNotes() {
         modal.classList.remove('hidden');
         form.reset();
         form.noteId.value = note.noteId || '';
+        form.playerId.value = note.playerId || '';
         form.content.value = note.content || '';
         form.potentialRating.value = note.potentialRating || 8;
         form.noteDate.value = note.noteDate || '';
@@ -324,6 +325,7 @@ function installScoutNotes() {
                     <button class="btn btn-secondary view-note-btn" type="button" data-content="${escapeHtml(note.content)}">查看</button>
                     <button class="btn btn-primary edit-note-btn" type="button"
                             data-note-id="${note.noteId}" data-content="${escapeHtml(note.content)}"
+                            data-player-id="${note.playerId}"
                             data-rating="${note.potentialRating}" data-date="${escapeHtml(note.noteDate || '')}">编辑</button>
                     <button class="btn btn-danger delete-note-btn" type="button" data-note-id="${note.noteId}">删除</button>
                     </div>
@@ -374,6 +376,7 @@ function installScoutNotes() {
         if (editButton) {
             openModal('edit', {
                 noteId: editButton.dataset.noteId,
+                playerId: editButton.dataset.playerId,
                 content: editButton.dataset.content,
                 potentialRating: editButton.dataset.rating,
                 noteDate: editButton.dataset.date

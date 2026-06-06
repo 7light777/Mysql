@@ -36,4 +36,6 @@ public interface GameMapper {
     int deletePlayerGameStatsByGameId(@Param("gameId") Integer gameId);
 
     int deleteGameById(@Param("gameId") Integer gameId);
+
+    void callDeleteGameWithStatsTransaction(@Param("gameId") Integer gameId);
 }

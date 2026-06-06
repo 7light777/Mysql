@@ -6,13 +6,11 @@ import com.yjt.basketball.mapper.GameMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GameService {
 
     private static final Logger log = LoggerFactory.getLogger(GameService.class);
-    private static final int CLASSIC_GAME_SCORE_THRESHOLD = 230;
 
     private final GameMapper gameMapper;
 
@@ -20,9 +18,8 @@ public class GameService {
         this.gameMapper = gameMapper;
     }
 
-    @Transactional
     public DeleteGameResultDTO deleteGameWithStats(Integer gameId) {
-        log.info("===== 事务删除比赛及球员数据 =====");
+        log.info("===== 数据库事务删除比赛及球员数据 =====");
         log.info("删除参数：gameId={}", gameId);
         GameListRow game = gameMapper.selectGameById(gameId);
         if (game == null) {
@@ -38,19 +35,9 @@ public class GameService {
                 game.getAwayScore(),
                 totalScore);
 
-        int deletedStatsCount = gameMapper.deletePlayerGameStatsByGameId(gameId);
-        log.info("第一步：删除 PlayerGameStats 记录，影响行数={}", deletedStatsCount);
-
-        // 回滚：第一步 DELETE 之后主动抛异常，证明 @Transactional 会撤销已删除的子表数据。
-        if (totalScore >= CLASSIC_GAME_SCORE_THRESHOLD) {
-            log.warn("触发事务回滚：该比赛总分 {} >= {}，属于重点比赛，不允许删除",
-                    totalScore, CLASSIC_GAME_SCORE_THRESHOLD);
-            throw new RuntimeException("该比赛双方总分为 " + totalScore
-                    + "，属于重点比赛，不允许删除；事务已回滚，PlayerGameStats 与 Game 均未被删除。");
-        }
-
-        gameMapper.deleteGameById(gameId);
-        log.info("第二步：删除 Game 记录成功");
+        int deletedStatsCount = game.getStatsCount() == null ? 0 : game.getStatsCount().intValue();
+        log.info("调用 MySQL 事务过程 sp_delete_game_with_stats_transaction，预期删除统计记录数={}", deletedStatsCount);
+        gameMapper.callDeleteGameWithStatsTransaction(gameId);
         log.info("事务删除完成：gameId={}, 删除统计数据 {} 条", gameId, deletedStatsCount);
 
         return new DeleteGameResultDTO(gameId, deletedStatsCount);

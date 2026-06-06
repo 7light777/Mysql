@@ -13,8 +13,8 @@
         <div th:replace="~{fragments/header :: header(${pageTitle})}"></div>
         <section class="content">
             <div class="notice">
-                本页面删除比赛时通过 @Transactional 事务同时删除 Game 与 PlayerGameStats。
-                若比赛双方总分达到 230 分及以上，系统会在删除 PlayerGameStats 后主动抛出异常，用于演示事务回滚。
+                本页面删除比赛时通过 MySQL 事务过程 sp_delete_game_with_stats_transaction 同时删除 Game 与 PlayerGameStats。
+                若比赛双方总分达到 230 分及以上，数据库会在删除 PlayerGameStats 后主动抛出异常，用于演示 ROLLBACK 回滚。
             </div>
 
             <section class="card">
@@ -103,5 +103,4 @@
 <script th:src="@{/js/app.js(v=20260606v4)}"></script>
 </body>
 </html>
-
 
